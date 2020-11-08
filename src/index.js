@@ -7,152 +7,244 @@ import fontawesomes from '../node_modules/@fortawesome/fontawesome-free/svgs/sol
 
 // プレイヤーの初期化 / Initialize TextAlive Player
 const player = new Player({
-  app: {
-    appAuthor: "あほくす（まじりみ）@friends.cafe",
-    appName: "マジカルミライプログラミングコンテスト",
-  },
-  mediaElement: document.querySelector("#media"),
+	app: {
+		appAuthor: "あほくす（まじりみ）@friends.cafe",
+		appName: "マジカルミライプログラミングコンテスト",
+	},
+	mediaElement: document.querySelector("#media"),
+	valenceArousalEnabled: true,
+	vocalAmplitudeEnabled: true,
 });
 
+// 各種設定
+const myenv = {
+	// 楽曲選択
+	selectSong: "Greenlights Serenade",
+	// selectSong: "Bless Your Breath";
+	// selectSong: "Ai Sarenakutemo Kimi Ga Iru";
+	
+	// 演出設定
+	templateMap: [
+	/*	{ indexType: "beat", startIndex: 0, endIndex: 20, 
+			backgroundType: "default", bgColorHSB: [84,37,54],
+			templateType: "songTitle" },*/
+		{ indexType: "beat", startIndex: 0, endIndex: 80,
+			backgroundType: "default", bgColorHSB: [84,37,54], bgBeatAmpS: 20,
+			templateType: "default" },
+		{ indexType: "beat", startIndex: 80, endIndex: 96,
+			backgroundType: "default", bgColorHSB: [140,240,41], bgBeatAmpS: 20,
+			templateType: "songTitle", charColorHSB: [92,228,189] },
+		{ indexType: "beat", startIndex: 96, endIndex: 104,
+			backgroundType: "default", bgColorHSB: [140,240,41], bgBeatAmpS: 20,
+			templateType: "songArtist", charColorHSB: [92,228,189] },
+		{ indexType: "beat", startIndex: 104, endIndex: 99999,
+			backgroundType: "default", bgColorHSB: [84,37,54], bgBeatAmpS: 20,
+			                        templateType: "default"  }
+	],
+
+	
+	// DEBUG MODE
+	devMode: false
+};
+
 let init = false;
+let devMessage = "";
+let templateIndex = 0;
 
 // リスナの登録 / Register listeners
 player.addListener({
-  onAppReady: (app) => {
-    if (!app.managed) {
-      // グリーンライツ・セレナーデ / Omoi feat. 初音ミク
-      // - 初音ミク「マジカルミライ 2018」テーマソング
-      // - 楽曲: http://www.youtube.com/watch?v=XSLhsjepelI
-      // - 歌詞: https://piapro.jp/t/61Y2
-      player.createFromSongUrl("http://www.youtube.com/watch?v=XSLhsjepelI", {
-        video: {
-          // 音楽地図訂正履歴: https://songle.jp/songs/1249410/history
-          beatId: 3818919,
-          chordId: 1207328,
-          repetitiveSegmentId: 1942131,
-          // 歌詞タイミング訂正履歴: https://textalive.jp/lyrics/www.youtube.com%2Fwatch%3Fv%3DXSLhsjepelI
-          lyricId: 50145,
-          lyricDiffId: 3168
-        }
-      });
-      
-      // ブレス・ユア・ブレス / 和田たけあき feat. 初音ミク
-      // - 初音ミク「マジカルミライ 2019」テーマソング
-      // - 楽曲: http://www.youtube.com/watch?v=a-Nf3QUFkOU
-      // - 歌詞: https://piapro.jp/t/Ytwu
-      // player.createFromSongUrl("http://www.youtube.com/watch?v=a-Nf3QUFkOU", {
-      //   video: {
-      //     // 音楽地図訂正履歴: https://songle.jp/songs/1688650/history
-      //     beatId: 3818481,
-      //     chordId: 1546157,
-      //     repetitiveSegmentId: 1942135,
-      //     // 歌詞タイミング訂正履歴: https://textalive.jp/lyrics/www.youtube.com%2Fwatch%3Fv=a-Nf3QUFkOU
-      //     lyricId: 50146,
-      //     lyricDiffId: 3143
-      //   }
-      // });
-      
-      // 愛されなくても君がいる / ピノキオピー feat. 初音ミク
-      // - 初音ミク「マジカルミライ 2020」テーマソング
-      // - 楽曲: http://www.youtube.com/watch?v=ygY2qObZv24
-      // - 歌詞: https://piapro.jp/t/PLR7
-      // player.createFromSongUrl("http://www.youtube.com/watch?v=ygY2qObZv24", {
-      //   video: {
-      //     // 音楽地図訂正履歴: https://songle.jp/songs/1977449/history
-      //     beatId: 3818852,
-      //     chordId: 1955797,
-      //     repetitiveSegmentId: 1942043,
-      //     // 歌詞タイミング訂正履歴: https://textalive.jp/lyrics/www.youtube.com%2Fwatch%3Fv=ygY2qObZv24
-      //     lyricId: 50150,
-      //     lyricDiffId: 3158
-      //   }
-      // });
-    }
-  },
+	onAppReady: (app) => {
+		if (!app.managed) {
+			switch (myenv.selectSong) {
+				case "Greenlights Serenade":
+					// グリーンライツ・セレナーデ / Omoi feat. 初音ミク
+					// - 初音ミク「マジカルミライ 2018」テーマソング
+					// - 楽曲: http://www.youtube.com/watch?v=XSLhsjepelI
+					// - 歌詞: https://piapro.jp/t/61Y2
+					player.createFromSongUrl("http://www.youtube.com/watch?v=XSLhsjepelI", {
+						video: {
+							// 音楽地図訂正履歴: https://songle.jp/songs/1249410/history
+							beatId: 3818919,
+							chordId: 1207328,
+							repetitiveSegmentId: 1942131,
+							// 歌詞タイミング訂正履歴: https://textalive.jp/lyrics/www.youtube.com%2Fwatch%3Fv%3DXSLhsjepelI
+							lyricId: 50145,
+							lyricDiffId: 3168
+						}
+					});
+					break;
+				case "Bless Your Breath":
+					// ブレス・ユア・ブレス / 和田たけあき feat. 初音ミク
+					// - 初音ミク「マジカルミライ 2019」テーマソング
+					// - 楽曲: http://www.youtube.com/watch?v=a-Nf3QUFkOU
+					// - 歌詞: https://piapro.jp/t/Ytwu
+					player.createFromSongUrl("http://www.youtube.com/watch?v=a-Nf3QUFkOU", {
+						video: {
+							// 音楽地図訂正履歴: https://songle.jp/songs/1688650/history
+							beatId: 3818481,
+							chordId: 1546157,
+							repetitiveSegmentId: 1942135,
+							// 歌詞タイミング訂正履歴: https://textalive.jp/lyrics/www.youtube.com%2Fwatch%3Fv=a-Nf3QUFkOU
+							lyricId: 50146,
+							lyricDiffId: 3143
+						}
+					});
+					break;
+				case "Ai Sarenakutemo Kimi Ga Iru":
+					// 愛されなくても君がいる / ピノキオピー feat. 初音ミク
+					// - 初音ミク「マジカルミライ 2020」テーマソング
+					// - 楽曲: http://www.youtube.com/watch?v=ygY2qObZv24
+					// - 歌詞: https://piapro.jp/t/PLR7
+					player.createFromSongUrl("http://www.youtube.com/watch?v=ygY2qObZv24", {
+						video: {
+							// 音楽地図訂正履歴: https://songle.jp/songs/1977449/history
+							beatId: 3818852,
+							chordId: 1955797,
+							repetitiveSegmentId: 1942043,
+							// 歌詞タイミング訂正履歴: https://textalive.jp/lyrics/www.youtube.com%2Fwatch%3Fv=ygY2qObZv24
+							lyricId: 50150,
+							lyricDiffId: 3158
+						}
+					});
+					break;
+			}
+		}
+	},
 
-  onTextLoad: (body) => {
-    // Webフォントを確実に読み込むためDOM要素に歌詞を貼り付ける
-    document.querySelector("#dummy").textContent = body?.text;
-  },
+	onTextLoad: (body) => {
+		// Webフォントを確実に読み込むためDOM要素に歌詞を貼り付ける
+		document.querySelector("#dummy").textContent = body?.text;
+	},
 
-  onVideoReady: () => {
-    if (!player.app.managed) {
-      document.querySelector("#message").className = "active";
-    }
-    document.querySelector("#overlay").className = "inactive";
-  },
+	onVideoReady: () => {
+		if (!player.app.managed) {
+			document.querySelector("#message").className = "active";
+		}
+		document.querySelector("#overlay").className = "inactive";
+	},
 
-  onPlay: () => {
-    document.querySelector("#message").className = "inactive";
-    if (!player.app.managed) {
-      document.querySelector("#control").className = "";
-    }
-    console.log("player.onPlay");
-  },
+	onPlay: () => {
+		document.querySelector("#message").className = "inactive";
+		if (!player.app.managed) {
+			document.querySelector("#control").className = "";
+		}
+		console.log("player.onPlay");
+	},
 
-  onPause: () => {
-    console.log("player.onPause");
-  },
+	onPause: () => {
+		console.log("player.onPause");
+	},
 
-  onSeek: () => {
-    console.log("player.onSeek");
-  },
+	onSeek: () => {
+		console.log("player.onSeek");
+	},
 
-  onStop: () => {
-    if (!player.app.managed) {
-      document.querySelector("#control").className = "active";
-    }
-    console.log("player.onStop");
-  },
+	onStop: () => {
+		if (!player.app.managed) {
+			document.querySelector("#control").className = "active";
+		}
+		console.log("player.onStop");
+	},
 });
 
 // 再生終了後に表示する巻き戻しボタン
 document.querySelector("#rewind").addEventListener("click", () => {
-  player.requestPlay();
+	player.requestPlay();
 });
 
-let img_logo;
-let img_font;
 // p5.js を初期化
 new P5((p5) => {
-  // キャンバスの大きさなどを計算
-  const width = Math.min(640, window.innerWidth);
-  const height = Math.min(270, window.innerHeight);
-  const margin = 30;
-  const numChars = 10;
-  const textAreaWidth = width - margin * 2;
-  var img_logo;
-  //var img_bolt;
-  //const fa = p5.loadFont("Font Awesome 5 Free");
-  //const noto = p5.loadFont("Noto Sans JP");
+	// キャンバスの大きさなどを計算
+	const width = Math.min(640, window.innerWidth);
+	const height = Math.min(270, window.innerHeight);
+	const margin = 30;
+	const numChars = 10;
+	const textAreaWidth = width - margin * 2;
+	var img_logo;
+	//var img_bolt;
+	//const fa = p5.loadFont("Font Awesome 5 Free");
+	//const noto = p5.loadFont("Noto Sans JP");
 
-  // キャンバスを作成
-  p5.setup = () => {
-    p5.createCanvas(width, height);
-    p5.colorMode(p5.HSB, 100);
-    p5.frameRate(30);
-    p5.background(40);
-    p5.noStroke();
-    p5.textFont("Noto Sans JP");
-    p5.textAlign(p5.CENTER, p5.CENTER);
-    img_logo = p5.loadImage(images['mm2020_logo']);
-    img_font = p5.loadImage(fontawesomes['bolt']);
-  };
+	// キャンバスを作成
+	p5.setup = () => {
+		p5.createCanvas(width, height);
+		p5.colorMode(p5.HSB, 100);
+		p5.frameRate(30);
+		p5.background(40);
+		p5.noStroke();
+		p5.textFont("Noto Sans JP");
+		p5.textAlign(p5.CENTER, p5.CENTER);
+		img_logo = p5.loadImage(images['mm2020_logo']);
+	};
 
 	// BACKGROUND
 
 	p5.drawBackground=()=>{
 		const position = player.timer.position;
-		p5.background(20);
+		const backgroundColorHSB = myenv.templateMap[templateIndex].bgColorHSB;
+		let colorH = 0;
+		let colorS = 0;
+		let colorB = 20;
+		const bgBeatAmpS = myenv.templateMap[templateIndex].bgBeatAmpS;
+		if (backgroundColorHSB) {
+			colorH = backgroundColorHSB[0]*100/255;
+			colorS = backgroundColorHSB[1]*100/255;
+			colorB = backgroundColorHSB[2]*100/240;
+		}
+		if (bgBeatAmpS) {
+			const xbeat = player.findBeat(position);
+			if (xbeat) {
+				const progress = xbeat.progress(position);
+				const eased = Ease.circIn(progress);
+				colorS = colorS + bgBeatAmpS * 2 * (eased - 0.5);
+				if(colorS > 100){
+					colorS = 100;
+				}
+				if(colorS < 0){
+					colorS = 0;
+				}
+			}
+		}
+		p5.background(colorH, colorS, colorB);
 		const beat = player.findBeat(position);
 		if (beat) {
-			//const progress = beat.progress(position);
-			//const rectHeight = Ease.quintIn(progress) * height;
-			//p5.fill(0, 0, 0, Ease.quintOut(progress) * 60);
-			//p5.rect(0, rectHeight, width, height - rectHeight);
+			devMessage += "beat.index     = " + beat.index + "<br>";
+			devMessage += "beat.length    = " + beat.length + "<br>";
+			devMessage += "beat.position  = " + beat.position + "<br>";
+			devMessage += "beat.startTime = " + beat.startTime + "<br>";
+			devMessage += "beat.endTime   = " + beat.endTime + "<br>";
+			devMessage += "beat.duration  = " + beat.duration + "<br>";
+			devMessage += "beat.progress  = " + beat.progress(position) + "<br><br>";
+		}
+		const chord = player.findChord(position);
+		if (chord) {
+			devMessage += "chord.index     = " + chord.index + "<br>";
+			devMessage += "chord.name      = " + chord.name + "<br>";
+			devMessage += "chord.startTime = " + chord.startTime + "<br>";
+			devMessage += "chord.endTime   = " + chord.endTime + "<br>";
+			devMessage += "chord.duration  = " + chord.duration + "<br>";
+			devMessage += "chord.progress  = " + chord.progress(position) + "<br><br>";
+
+		}
+		const repetitiveSegment = player.findChorus(position);
+		if (repetitiveSegment) {
+			devMessage += "chorus.index     = " + repetitiveSegment.index + "<br>";
+			devMessage += "chorus.startTime = " + repetitiveSegment.startTime + "<br>";
+			devMessage += "chorus.endTime   = " + repetitiveSegment.endTime + "<br>";
+			devMessage += "chorus.duration  = " + repetitiveSegment.duration + "<br>";
+			devMessage += "chorus.progress  = " + repetitiveSegment.progress(position) + "<br><br>";
+		}
+
+		const amplitude = player.getVocalAmplitude(position);
+		devMessage += "player.getVocalAmplitude = " + amplitude + "<br>";
+		const va = player.getValenceArousal(position);
+		if (va){
+			devMessage += "player.getValenceArousal.Valence = " + va.v + "<br>";
+			devMessage += "player.getValenceArousal.Arousal = " + va.a + "<br><br>";
 		}
 
 	};
+
 	// CHARACTOR DECORATION
 	p5.drawCharDeco=()=>{
 		const position = player.timer.position;
@@ -162,7 +254,7 @@ new P5((p5) => {
 		let i = 0;
 		while (i<count) {
 			if (char.endTime + 320 < position) {
-				
+
 			}
 			else if (char.startTime < position + 100) {
 				const x = ((i%count) + 0.5) * (textAreaWidth / count);
@@ -194,14 +286,64 @@ new P5((p5) => {
 
 
 	};
+
 	// CHAR
 	p5.drawChar=()=>{
 		const position = player.timer.position;
+
+		const charColorHSB = myenv.templateMap[templateIndex].charColorHSB;
+		let colorH = 0;
+		let colorS = 0;
+		let colorB = 100;
+		if (charColorHSB) {
+			colorH = charColorHSB[0]*100/255;
+			colorS = charColorHSB[1]*100/255;
+			colorB = charColorHSB[2]*100/240;
+		}
+
+
 		let phrase = player.video.findPhrase(position - 100, { loose: true });
+		
+		devMessage += "phrase.text      = " + phrase.text + "<br>";
+		devMessage += "phrase.charCount = " + phrase.charCount + "<br>";
+		devMessage += "phrase.wordCount = " + phrase.wordCount + "<br>";
+		devMessage += "phrase.startTime = " + phrase.startTime + "<br>";
+		devMessage += "phrase.endTime   = " + phrase.endTime + "<br>";
+		devMessage += "phrase.duration  = " + phrase.duration + "<br>";
+		devMessage += "phrase.progress  = " + (100*phrase.progress(position)).toFixed(2)+"%" + "<br><br>";
+
+		const wCount = phrase.wordCount;
+		let word = phrase.firstWord;
+		i = 0;
+		while(i<wCount){
+			if (word.contains(position)) {
+				devMessage += "word.index          = " + phrase.findIndex(word) + "<br>";
+				devMessage += "word.text           = " + word.text + "<br>";
+				devMessage += "word.language       = " + word.language + "<br>";
+				devMessage += "word.Part-of-speech = " + word.pos + "<br>";
+				devMessage += "word.startTime      = " + word.startTime + "<br>";
+				devMessage += "word.endTime        = " + word.endTime + "<br>";
+				devMessage += "word.duration       = " + word.duration + "<br>";
+				devMessage += "word.progress       = " + (100*word.progress(position)).toFixed(2)+"%" + "<br><br>";
+			}
+			word = word.next;
+			i++;
+		}
+
+
 		let char = phrase.firstChar;
-		let count = phrase.charCount;
+		const count = phrase.charCount;
 		let i = 0;
 		while(i<count){
+			if (char.contains(position)) {
+				devMessage += "char.index     = " + phrase.findIndex(char) + "<br>";
+				devMessage += "char.text      = " + char.text + "<br>";
+				devMessage += "char.startTime = " + char.startTime + "<br>";
+				devMessage += "char.endTime   = " + char.endTime + "<br>";
+				devMessage += "char.duration  = " + char.duration + "<br>";
+				devMessage += "char.progress  = " + (100*char.progress(position)).toFixed(2)+"%" + "<br><br>";
+			}
+
 			if (char.startTime < position + 100) {
 				const x = ((i%count) + 0.5) * (textAreaWidth / count);
 				let transparency,y = 0,size = 39;
@@ -223,7 +365,7 @@ new P5((p5) => {
 				else {
 					transparency = 1;
 				}
-				p5.fill(0, 0, 100, transparency * 100);
+				p5.fill(colorH, colorS, colorB, transparency * 100);
 				p5.noStroke();
 				p5.textSize(size);
 				p5.text(char.text, margin + x, height / 2 + y);
@@ -232,17 +374,22 @@ new P5((p5) => {
 			i++;
 		}
 	};
-	p5.defaultDraw=()=>{
-		p5.drawBackground();
-		p5.drawCharDeco();
-		p5.drawChar();
-	};
+	
 	p5.drawTitle=()=>{
-		let title = "グリーンライツ・セレナーデ";
+		let title = player.data.song.name;
 		let i = 0, size = 39, y = 0;
 		let count = title.length;
+		const charColorHSB = myenv.templateMap[templateIndex].charColorHSB;
+		let colorH = 0;
+		let colorS = 0;
+		let colorB = 100;
+		if (charColorHSB) {
+			colorH = charColorHSB[0]*100/255;
+			colorS = charColorHSB[1]*100/255;
+			colorB = charColorHSB[2]*100/240;
+		}
 		while(i<count){
-			p5.fill(0, 0, 100, 100);
+			p5.fill(colorH, colorS, colorB, 100);
 			p5.noStroke();
 			p5.textSize(size);
 			const x = ((i%count) + 0.5) * (textAreaWidth / count);
@@ -250,90 +397,105 @@ new P5((p5) => {
 			i++;
 		}
 	};
-	p5.titleDraw=()=>{
-		p5.drawBackground();
-		p5.drawTitle();
+
+	p5.drawArtist=()=>{
+		let title = player.data.song.artist.name;
+		let i = 0, size = 39, y = 0;
+		let count = title.length;
+		const charColorHSB = myenv.templateMap[templateIndex].charColorHSB;
+		let colorH = 0;
+		let colorS = 0;
+		let colorB = 100;
+		if (charColorHSB) {
+			colorH = charColorHSB[0]*100/255;
+			colorS = charColorHSB[1]*100/255;
+			colorB = charColorHSB[2]*100/240;
+		}
+		while(i<count){
+			p5.fill(colorH, colorS, colorB, 100);
+			p5.noStroke();
+			p5.textSize(size);
+			const x = ((i%count) + 0.5) * (textAreaWidth / count / 2) + textAreaWidth / 4;
+			p5.text(title.substr(i,1), margin + x, height / 2 + y);
+			i++;
+		}
 	};
 
-  // ビートにあわせて背景を、発声にあわせて歌詞を表示
-  p5.draw = () => {
-    // プレイヤーが準備できていなかったら何もしない
-    if (!player || !player.video) {
-      return;
-    }
-    const position = player.timer.position;
-    if(position >= 0 && position < 1000) {
-	    p5.titleDraw();
-    }
-    else{
-            p5.defaultDraw();
-    }
-    //const position = player.timer.position;
+	p5.processTemplate=()=>{
+		// templateMap の template に合わせて演出を選択
+		const temp = myenv.templateMap[templateIndex];
 
-    // 背景
-    //p5.background(100);
-    //const beat = player.findBeat(position);
-    //if (beat) {
-    //  const progress = beat.progress(position);
-    //  const rectHeight = Ease.quintIn(progress) * height;
-    //  p5.fill(0, 0, 0, Ease.quintOut(progress) * 60);
-    //  p5.rect(0, rectHeight, width, height - rectHeight);
-    //}
+		devMessage += "backgroundType = " + temp.backgroundType + "<br><br>";
+		switch (temp.backgroundType) {
+			case "default":
+				p5.drawBackground();
+				break;
+		}
+		devMessage += "templateType   = " + temp.templateType + "<br><br>";
+		switch (temp.templateType) {
+			case "default":
+				p5.drawCharDeco();
+				p5.drawChar();
+				break;
+			case "songTitle":
+				p5.drawTitle();
+				break;
+			case "songArtist":
+				p5.drawArtist();
+				break;
+		}	
+	};
 
-    
-    // Fontawesome
-//    p5.textFont("FontAwesome");
-//    p5.textSize(36);
-////    p5.image(img_font, 0, 0, width, height);
-//    p5.textFont("Noto Sans JP");
-
-    // 歌詞
-    // - 再生位置より 100 [ms] 前の時点での発声文字を取得
-    // - { loose: true } にすることで発声中でなければ一つ後ろの文字を取得
-    //let char = player.video.findChar(position - 100, { loose: true });
-
-
-    //if (char) {
-      // 位置決めのため、文字が歌詞全体で何番目かも取得しておく
-      //let index = player.video.findIndex(char);
-
-      //while (char) {
-      //  if (char.endTime + 320 < position) {
-      //    // これ以降の文字は表示する必要がない
-      //    break;
-      //  }
-      //  if (char.startTime < position + 100) {
-      //    const x = ((index % numChars) + 0.5) * (textAreaWidth / numChars);
-      //    let transparency,
-      //      y = 0,
-      //      size = 39;
-//
-      //    // 100 [ms] かけてフェードインしてくる
-      //    if (position < char.startTime) {
-      //      const progress = 1 - (char.startTime - position) / 100;
-      //      const eased = Ease.circIn(progress);
-      //      transparency = progress;
-      //      size = 39 * eased + Math.min(width, height) * (1 - eased);
-      //    }
-      //    // 160 [ms] かけてフェードアウトする
-      //    else if (char.endTime < position) {
-      //      const progress = (position - char.endTime) / 160;
-      //      const eased = Ease.quintIn(progress);
-      //      transparency = 1 - eased;
-      //      y = -eased * (height / 2);
-      //    }
-      //    // 発声区間中は完全に不透明
-      //    else {
-      //      transparency = 1;
-      //    }
-
-      //    p5.fill(0, 0, 100, transparency * 100);
-      //    p5.textSize(size);
-      //    p5.text(char.text, margin + x, height / 2 + y);
-      //  }
-      //  char = char.next;
-      //  index++;
-      //}
-    //}
-  };
+	// ビートにあわせて背景を、発声にあわせて歌詞を表示
+	p5.draw = () => {
+		// プレイヤーが準備できていなかったら何もしない
+		if (!player || !player.video) {
+			return;
+		}
+		devMessage = "Debug Mode = ON <br><br>";
+		const song = player.data.song;
+		if(song){
+			devMessage += "player.data.song.name        = " + song.name + "<br>";
+			devMessage += "player.data.song.artist.name = " + song.artist.name + "<br>";
+			devMessage += "player.data.song.permalink   = " + song.permalink + "<br><br>";
+		}
+		const position = player.timer.position;
+		devMessage += "player.timer.position = " + position + "<br><br>";
+		// templateMap の Index が範囲内であれば演出の処理を行う。
+		devMessage += "templateIndex = " + templateIndex + "<br>";
+		const temp = myenv.templateMap[templateIndex];
+		devMessage += "indexType     = " + temp.indexType  + "<br>";
+		devMessage += "startIndex    = " + temp.startIndex + "<br>";
+		devMessage += "endIndex      = " + temp.endIndex  + "<br><br>";
+		switch (temp.indexType){
+			case "beat":
+				const beat = player.findBeat(position);
+				if (beat) {
+					if (temp.startIndex <= beat.index) {
+						p5.processTemplate();
+					}
+					if (temp.endIndex <= beat.index) {
+						templateIndex++;
+					}
+				}
+				break;
+		}
+		// DEBUG INFO PRINT
+		if (myenv.devMode) {
+			var debugInfo = document.getElementById("debugInfo");
+			if(debugInfo == null){
+				debugInfo = document.createElement('div');
+				debugInfo.setAttribute("id", "debugInfo");
+				document.body.appendChild(debugInfo);
+				debugInfo.style.position = "absolute";
+				debugInfo.style.left = 10;
+				debugInfo.style.top = 50;
+				debugInfo.overflow = "visible";
+				debugInfo.style.fontSize = 9;
+				debugInfo.style.fontFamily = "monospace";
+				debugInfo.style.whiteSpace = "pre";
+			}
+			debugInfo.innerHTML = devMessage;
+		}
+	};
 });
