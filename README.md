@@ -17,7 +17,7 @@ npm run dev
 
 ## ビルド
 
-以下のコマンドで `docs` 以下にビルド済みファイルが生成されます。 [サンプルコードのデモページ](https://textalivejp.github.io/textalive-app-p5js/) は [GitHub Pages](https://pages.github.com/) で、このリポジトリの `docs` 以下のファイルが提供されています。
+以下のコマンドで `docs` 以下にビルド済みファイルが生成されます。
 
 ```sh
 npm run build
