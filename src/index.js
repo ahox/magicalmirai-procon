@@ -25,19 +25,25 @@ const myenv = {
 	
 	// 演出設定
 	templateMap: [
-	/*	{ indexType: "beat", startIndex: 0, endIndex: 20, 
+		{ indexType: "beat", startIndex: 0, endIndex: 20, 
 			backgroundType: "default", bgColorHSB: [84,37,54],
-			templateType: "songTitle" },*/
-		{ indexType: "beat", startIndex: 0, endIndex: 80,
+			templateType: "default" },
+		{ indexType: "beat", startIndex: 20, endIndex: 64,
 			backgroundType: "default", bgColorHSB: [84,37,54], bgBeatAmpS: 20,
 			templateType: "default" },
+		{ indexType: "beat", startIndex: 64, endIndex: 80,
+			backgroundType: "wave", bgColorHSB: [84,37,54], bgWaveCount: 30, bgWaveColorHSB: [84,37,64],
+			templateType: "default" },
 		{ indexType: "beat", startIndex: 80, endIndex: 96,
-			backgroundType: "default", bgColorHSB: [140,240,41], bgBeatAmpS: 20,
+			backgroundType: "wave", bgColorHSB: [140,240,41], bgWaveCount: 30, bgWaveColorHSB: [140,240,58],
 			templateType: "songTitle", charColorHSB: [92,228,189] },
 		{ indexType: "beat", startIndex: 96, endIndex: 104,
-			backgroundType: "default", bgColorHSB: [140,240,41], bgBeatAmpS: 20,
+			backgroundType: "wave", bgColorHSB: [140,240,41], bgWaveCount: 30, bgWaveColorHSB: [140,240,58],
 			templateType: "songArtist", charColorHSB: [92,228,189] },
-		{ indexType: "beat", startIndex: 104, endIndex: 99999,
+		{ indexType: "beat", startIndex: 104, endIndex: 108,
+			backgroundType: "wave", bgColorHSB: [140,240,41], bgWaveCount: 30, bgWaveColorHSB: [140,240,58],
+			templateType: "default" },
+		{ indexType: "beat", startIndex: 108, endIndex: 99999,
 			backgroundType: "default", bgColorHSB: [84,37,54], bgBeatAmpS: 20,
 			                        templateType: "default"  }
 	],
@@ -50,6 +56,15 @@ const myenv = {
 let init = false;
 let devMessage = "";
 let templateIndex = 0;
+let dataStore = {
+	background: {
+	},
+	char: {
+	},
+	chardeco: {
+	},
+
+};
 
 // リスナの登録 / Register listeners
 player.addListener({
@@ -178,6 +193,87 @@ new P5((p5) => {
 	};
 
 	// BACKGROUND
+	p5.drawBackgroundWave=()=>{
+		const position = player.timer.position;
+		let count = myenv.templateMap[templateIndex].bgWaveCount;
+		if (!(count)){
+			count = 30;
+		}
+		// 初期化
+		if (!("wave" in dataStore.background)){
+			dataStore.background.wave = {
+				lastPosition: position,
+				maxVolume: 10000,
+				historyVolume: Array(count),
+				historyCount: count,
+				sign: 1,
+			};
+		}
+		// countが変化している場合
+		if (dataStore.background.wave.historyCount != count){
+			delete dataStore.background.wave.historyVolume;
+			dataStore.background.wave.historyVolume = Array(count);
+			dataStore.background.wave.historyCount = count;
+		}
+
+		// いったん途切れてる場合初期化
+		if (dataStore.background.wave.lastPosition + 1000 < position){
+			delete dataStore.background.wave.historyVolume;
+			dataStore.background.wave.historyVolume = Array(count);
+			dataStore.background.wave.historyCount = count;
+		}
+		// Volume追加
+		const vol = player.getVocalAmplitude(position);
+		dataStore.background.wave.historyVolume.push(vol);
+		dataStore.background.wave.historyVolume.shift();
+		if (vol>dataStore.background.wave.maxVolume){
+			dataStore.background.wave.maxVolume = vol;
+		}
+		// position更新
+		dataStore.background.wave.lastPosition = position;
+		// sign更新
+		const sign = dataStore.background.wave.sign;
+		dataStore.background.wave.sign = sign * (-1);
+
+		devMessage += "wave.maxVolume = " + dataStore.background.wave.maxVolume + "<br>";
+		devMessage += "wave.historyCount = " + dataStore.background.wave.historyCount + "<br>";
+
+		const backgroundColorHSB = myenv.templateMap[templateIndex].bgColorHSB;
+		let colorH = 0;
+		let colorS = 0;
+		let colorB = 20;
+		if (backgroundColorHSB) {
+			colorH = backgroundColorHSB[0]*100/255;
+			colorS = backgroundColorHSB[1]*100/255;
+			colorB = backgroundColorHSB[2]*100/240;
+		}
+		p5.background(colorH, colorS, colorB);
+
+		// bgWaveColorHSB
+		const bgWaveColorHSB = myenv.templateMap[templateIndex].bgWaveColorHSB
+		colorH = 0;
+		colorS = 0;
+		colorB = 40;
+		if (bgWaveColorHSB) {
+			colorH = bgWaveColorHSB[0]*100/255;
+			colorS = bgWaveColorHSB[1]*100/255;
+			colorB = bgWaveColorHSB[2]*100/240;
+		}
+
+		p5.stroke(colorH, colorS, colorB);
+		p5.strokeWeight(1);
+		p5.noFill();
+		let i = 0;
+		let wave = dataStore.background.wave;
+		p5.beginShape();
+		for (i=0; i<count; i++){
+			p5.curveVertex(
+				i * width / count,
+				sign * (2*(i%2)-1) * wave.historyVolume[i] / wave.maxVolume * height / 2 + height / 2
+			);
+		}
+		p5.endShape();
+	}
 
 	p5.drawBackground=()=>{
 		const position = player.timer.position;
@@ -429,6 +525,9 @@ new P5((p5) => {
 		switch (temp.backgroundType) {
 			case "default":
 				p5.drawBackground();
+				break;
+			case "wave":
+				p5.drawBackgroundWave();
 				break;
 		}
 		devMessage += "templateType   = " + temp.templateType + "<br><br>";
