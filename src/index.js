@@ -32,20 +32,30 @@ const myenv = {
 			backgroundType: "default", bgColorHSB: [84,37,54], bgBeatAmpS: 20,
 			templateType: "default" },
 		{ indexType: "beat", startIndex: 64, endIndex: 80,
-			backgroundType: "wave", bgColorHSB: [84,37,54], bgWaveCount: 30, bgWaveColorHSB: [84,37,64],
+			backgroundType: "wave", bgColorHSB: [84,37,54], bgWaveCount: 120, bgWaveColorHSB: [84,37,64],
 			templateType: "default" },
 		{ indexType: "beat", startIndex: 80, endIndex: 96,
-			backgroundType: "wave", bgColorHSB: [140,240,41], bgWaveCount: 30, bgWaveColorHSB: [140,240,58],
+			backgroundType: "wave", bgColorHSB: [140,240,41], bgWaveCount: 120, bgWaveColorHSB: [140,240,58],
 			templateType: "songTitle", charColorHSB: [92,228,189] },
 		{ indexType: "beat", startIndex: 96, endIndex: 104,
-			backgroundType: "wave", bgColorHSB: [140,240,41], bgWaveCount: 30, bgWaveColorHSB: [140,240,58],
+			backgroundType: "wave", bgColorHSB: [140,240,41], bgWaveCount: 120, bgWaveColorHSB: [140,240,58],
 			templateType: "songArtist", charColorHSB: [92,228,189] },
 		{ indexType: "beat", startIndex: 104, endIndex: 108,
-			backgroundType: "wave", bgColorHSB: [140,240,41], bgWaveCount: 30, bgWaveColorHSB: [140,240,58],
+			backgroundType: "wave", bgColorHSB: [140,240,41], bgWaveCount: 120, bgWaveColorHSB: [140,240,58],
 			templateType: "default" },
 		{ indexType: "beat", startIndex: 108, endIndex: 99999,
 			backgroundType: "default", bgColorHSB: [84,37,54], bgBeatAmpS: 20,
-			                        templateType: "default"  }
+			                        templateType: "default"  },
+		/*
+		{ indexType: "beat", startIndex: 108, endIndex: 99999,
+			backgroundType: "warp", bgColorHSB: [140,240,41], bgWarpObjType: "point", bgWarpObjColorHSB: [140,240,58],
+			bgWarpObjCurve: [
+				[{x: 0, y: 0.5}, {x: 0, y: 0.5},{x: 0.5, y: 0.5},{x: 0.5, y: 1.0},{x: 0.5, y: 1.0},],
+				[{x: 0, y: 0.5}, {x: 0, y: 0.5},{x: 0.5, y: 0.5},{x: 0.5, y: 1.0},{x: 0.5, y: 1.0},],
+				[{x: 0, y: 0.5}, {x: 0, y: 0.5},{x: 0.5, y: 0.5},{x: 0.5, y: 1.0},{x: 0.5, y: 1.0},],
+			],
+		}*/
+
 	],
 
 	
@@ -62,6 +72,12 @@ let dataStore = {
 	char: {
 	},
 	chardeco: {
+	},
+
+};
+let tool = {
+	progressToSinWave: (progress) => {
+		return 0.5 * (1 + Math.cos(2 * Math.PI * progress));
 	},
 
 };
@@ -197,7 +213,7 @@ new P5((p5) => {
 		const position = player.timer.position;
 		let count = myenv.templateMap[templateIndex].bgWaveCount;
 		if (!(count)){
-			count = 30;
+			count = 120;
 		}
 		// 初期化
 		if (!("wave" in dataStore.background)){
@@ -223,11 +239,17 @@ new P5((p5) => {
 			dataStore.background.wave.historyCount = count;
 		}
 		// Volume追加
-		const vol = player.getVocalAmplitude(position);
-		dataStore.background.wave.historyVolume.push(vol);
-		dataStore.background.wave.historyVolume.shift();
-		if (vol>dataStore.background.wave.maxVolume){
-			dataStore.background.wave.maxVolume = vol;
+		const sampleRate = 120; // Hz
+		const sampleTime = 1000 / sampleRate; // msec.
+		let tempPosition = dataStore.background.wave.lastPosition;
+		while(tempPosition + sampleTime < position){
+			tempPosition += sampleTime;
+			const vol = player.getVocalAmplitude(position);
+			dataStore.background.wave.historyVolume.push(vol);
+			dataStore.background.wave.historyVolume.shift();
+			if (vol>dataStore.background.wave.maxVolume){
+				dataStore.background.wave.maxVolume = vol;
+			}
 		}
 		// position更新
 		dataStore.background.wave.lastPosition = position;
@@ -291,8 +313,7 @@ new P5((p5) => {
 			const xbeat = player.findBeat(position);
 			if (xbeat) {
 				const progress = xbeat.progress(position);
-				const eased = Ease.circIn(progress);
-				colorS = colorS + bgBeatAmpS * 2 * (eased - 0.5);
+				colorS = colorS + bgBeatAmpS * tool.progressToSinWave(progress);
 				if(colorS > 100){
 					colorS = 100;
 				}
