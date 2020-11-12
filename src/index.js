@@ -27,7 +27,7 @@ const myenv = {
 	templateMap: [
 		{ indexType: "beat", startIndex: 0, endIndex: 20, 
 			backgroundType: "default", bgColorHSB: [84,37,54],
-			templateType: "default" },
+			templateType: "default" },/*
 		{ indexType: "beat", startIndex: 20, endIndex: 64,
 			backgroundType: "default", bgColorHSB: [84,37,54], bgBeatAmpS: 20,
 			templateType: "default" },
@@ -43,18 +43,18 @@ const myenv = {
 		{ indexType: "beat", startIndex: 104, endIndex: 108,
 			backgroundType: "wave", bgColorHSB: [140,240,41], bgWaveCount: 120, bgWaveColorHSB: [140,240,58],
 			templateType: "default" },
-		{ indexType: "beat", startIndex: 108, endIndex: 99999,
+		{ indexType: "beat", startIndex: 108, endIndex: 120,
 			backgroundType: "default", bgColorHSB: [84,37,54], bgBeatAmpS: 20,
-			                        templateType: "default"  },
-		/*
-		{ indexType: "beat", startIndex: 108, endIndex: 99999,
-			backgroundType: "warp", bgColorHSB: [140,240,41], bgWarpObjType: "point", bgWarpObjColorHSB: [140,240,58],
+			                        templateType: "default"  },*/
+		{ indexType: "beat", startIndex: 20, endIndex: 99999,
+			backgroundType: "warp", bgColorHSB: [140,240,41], bgWarpObjType: "point", bgWarpObjColorHSB: [140,240,240],
 			bgWarpObjCurve: [
-				[{x: 0, y: 0.5}, {x: 0, y: 0.5},{x: 0.5, y: 0.5},{x: 0.5, y: 1.0},{x: 0.5, y: 1.0},],
-				[{x: 0, y: 0.5}, {x: 0, y: 0.5},{x: 0.5, y: 0.5},{x: 0.5, y: 1.0},{x: 0.5, y: 1.0},],
-				[{x: 0, y: 0.5}, {x: 0, y: 0.5},{x: 0.5, y: 0.5},{x: 0.5, y: 1.0},{x: 0.5, y: 1.0},],
-			],
-		}*/
+				[{x: 0, y: 0.4}, {x: 0, y: 0.4, t:0.0},{x: 0.5, y: 0.3, t:0.5},{x: 1, y: 0.0, t:1.0},{x: 1, y: 0.0},],
+				[{x: 0, y: 0.5}, {x: 0, y: 0.5, t:0.0},{x: 0.5, y: 0.5, t:0.5},{x: 1, y: 0.5, t:1.0},{x: 1, y: 0.5},],
+				[{x: 0, y: 0.6}, {x: 0, y: 0.6, t:0.0},{x: 0.5, y: 0.7, t:0.5},{x: 1, y: 1.0, t:1.0},{x: 1, y: 1.0},],
+			], bgWarpObjNum: 10, bgWarpObjSpeed: 1.0,
+			templateType: "default",
+		}
 
 	],
 
@@ -209,6 +209,76 @@ new P5((p5) => {
 	};
 
 	// BACKGROUND
+	p5.drawBackgroundWarp=()=>{
+		// Load Parameters
+		const params = myenv.templateMap[templateIndex];
+		const position = player.timer.position;
+		
+		const backgroundColorHSB = params.bgColorHSB;
+		let colorH = 0;
+		let colorS = 0;
+		let colorB = 20;
+		if (backgroundColorHSB) {
+			colorH = backgroundColorHSB[0]*100/255;
+			colorS = backgroundColorHSB[1]*100/255;
+			colorB = backgroundColorHSB[2]*100/240;
+		}
+		p5.background(colorH, colorS, colorB);
+
+		const bgColorHSB = params.bgWarpObjColorHSB;
+		colorH = 0;
+		colorS = 0;
+		colorB = 40;
+		if (bgColorHSB) {
+			colorH = bgColorHSB[0]*100/255;
+			colorS = bgColorHSB[1]*100/255;
+			colorB = bgColorHSB[2]*100/240;
+		}
+
+		p5.stroke(colorH, colorS, colorB);
+		p5.strokeWeight(2);
+		p5.fill(colorH, colorS, colorB);
+		// 速度bgWarpObjSpeedからt=0.0-1.0の変化に要する時間[msec]を算出
+		const modPosition = 1000 / params.bgWarpObjSpeed;
+		const t = position % modPosition / modPosition;
+		console.log("modPosition = "+modPosition+"; params.bgWarpObjSpeed = "+params.bgWarpObjSpeed+";");
+		let i=0;
+		//console.log("i.max="+params.bgWarpObjCurve.length);
+		for (i=0; i<params.bgWarpObjCurve.length; i++){
+			let j=0;
+			let tDiff = 1.0 / params.bgWarpObjNum;
+			//console.log("j.max="+params.bgWarpObjCurve[i].length);
+			for(j=0; j<params.bgWarpObjCurve[i].length-3; j++){
+				const x1=params.bgWarpObjCurve[i][j+0].x * width;
+                                const x2=params.bgWarpObjCurve[i][j+1].x * width;
+				const x3=params.bgWarpObjCurve[i][j+2].x * width;
+				const x4=params.bgWarpObjCurve[i][j+3].x * width;
+				const y1=params.bgWarpObjCurve[i][j+0].y * height;
+				const y2=params.bgWarpObjCurve[i][j+1].y * height;
+				const y3=params.bgWarpObjCurve[i][j+2].y * height;
+				const y4=params.bgWarpObjCurve[i][j+3].y * height;
+				const t0=params.bgWarpObjCurve[i][j+1].t;
+				const t1=params.bgWarpObjCurve[i][j+2].t;
+				let k=0;
+				//console.log("k.max="+params.bgWarpObjNum);
+				for(k=0; k<params.bgWarpObjNum; k++){
+					const tt = (t + tDiff * k) % 1.0;
+					console.log("t="+t+"; tt="+tt+";");
+					if ((t0 <= tt) && (tt < t1)){
+						const ttt = tt / (t1-t0);
+						const x=p5.curvePoint(x1,x2,x3,x4,ttt);
+						const y=p5.curvePoint(y1,y2,y3,y4,ttt);
+						console.log("(x,y)=("+x+","+y+")");
+						switch (params.bgWarpObjType){
+							case "point":
+								p5.point(x, y);
+								break;
+						}
+					}
+				}
+			}
+		}
+	};
 	p5.drawBackgroundWave=()=>{
 		const position = player.timer.position;
 		let count = myenv.templateMap[templateIndex].bgWaveCount;
@@ -549,6 +619,9 @@ new P5((p5) => {
 				break;
 			case "wave":
 				p5.drawBackgroundWave();
+				break;
+			case "warp":
+				p5.drawBackgroundWarp();
 				break;
 		}
 		devMessage += "templateType   = " + temp.templateType + "<br><br>";
