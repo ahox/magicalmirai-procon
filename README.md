@@ -3,7 +3,8 @@
 
 TextAlive App API のサンプルコード[TextAlive App API p5.js example](https://github.com/TextAliveJp/textalive-app-p5js)をベースに作成しました。
 
-- 本作品のデモページ： http://160.251.21.144:1234/ （起動していない場合はすみません）
+- 本作品の動かし方については私のブログに説明を書いておきました。
+-- http://ahox.jp/prog/2020-12_advent-calendar-2020-magicalmirai-procon.html
 
 
 ## 開発
